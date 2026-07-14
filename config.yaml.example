@@ -80,7 +80,7 @@ store:
 # Authentication and authorization
 # API key authentication for job submission and management endpoints
 auth:
-  enabled: false  # Set to true to enable API key authentication
+  enabled: true  # Set to true to enable API key authentication
 
 # Artifact storage configuration
 # Supports local filesystem or S3-compatible storage

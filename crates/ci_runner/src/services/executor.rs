@@ -8,6 +8,7 @@ use bollard::query_parameters::{
 };
 use chrono::Utc;
 use futures_util::StreamExt;
+use std::path::PathBuf;
 use std::time::Duration;
 use tracing::{info, instrument, warn};
 
@@ -29,6 +30,7 @@ pub struct ExecutorConfig {
     pub network_mode: String,
     pub default_timeout: Duration,
     pub max_timeout: Duration,
+    pub workspace_root: PathBuf,
 }
 
 impl JobExecutor {
@@ -406,16 +408,15 @@ impl JobExecutor {
             }
             }
 
-        // Mount the Docker volume instead of bind mount (required for Docker Desktop Mac)
-        // The workspace volume is mounted at /app/workspaces in ci-runner-dev container
-        // We mount the entire volume and use the job_id subdirectory
+        // Use bind mount so files cloned into the host workspace are visible in the job container
+        let workspace_host_path = self.config.workspace_root.display().to_string();
         let host_config = HostConfig {
             cpu_quota: Some((self.config.cpu_limit * 100_000.0) as i64),
             cpu_period: Some(100_000),
             memory: Some(self.config.memory_limit as i64),
             memory_swap: Some(self.config.memory_limit as i64), // No swap
             pids_limit: Some(self.config.pids_limit),
-            binds: Some(vec![format!("ci-server-poc_ci-workspaces:/workspace:rw")]),
+            binds: Some(vec![format!("{}:/workspace:rw", workspace_host_path)]),
             network_mode: Some(self.config.network_mode.clone()),
             ..Default::default()
         };

@@ -15,21 +15,23 @@ services:
       # Mount Docker socket for container execution
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount workspaces and cache directories
-      # Use Docker volume for workspaces to allow mounting into job containers (Docker Desktop Mac requirement)
-      - ci-workspaces:/app/workspaces
+      # Use bind mount for workspaces so files cloned by ci-runner are visible in job containers
+      - ./workspaces:/app/workspaces
       - ci-cache:/app/cache
       # Mount target directory for faster builds (optional)
       - ci_runner_target:/app/target
     environment:
       - RUST_LOG=info
       - CI_CONFIG=/app/config.yaml
-      - GS_SERVICE_TOKEN=${GS_SERVICE_TOKEN:-dummy_token}
+      - CI_SERVICE_TOKEN=${CI_SERVICE_TOKEN:-dummy_token}
+      - CI_API_KEY=${CI_API_KEY:-}
       - CARGO_TARGET_DIR=/app/target
     ports:
-      - "8080:8080"  # HTTP API (job submission, status, replay/retry, SSE streams)
+      - "8081:8080"  # HTTP API (job submission, status, replay/retry, SSE streams)
       - "9090:9090"  # Prometheus metrics endpoint
     networks:
       - ci-network
+      - stasis-network
     command: cargo watch --ignore "workspaces/**" --ignore "cache/**" --ignore "target/**" -x "run --bin ci_runner"
     restart: unless-stopped
     # Health check (optional)
@@ -41,11 +43,12 @@ services:
 
 volumes:
   ci_runner_target:
-  ci-workspaces:
   ci-cache:
 
 networks:
   ci-network:
     driver: bridge
     name: ci-network
+  stasis-network:
+    external: true
 

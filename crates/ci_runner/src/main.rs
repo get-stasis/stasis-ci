@@ -39,11 +39,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         e
     })?;
 
-    // Load auth token
-    let auth_token = tokio::fs::read_to_string(&config.git_server.service_token_path)
-        .await
+    // Load auth token from CI_SERVICE_TOKEN env var
+    let auth_token = std::env::var("CI_SERVICE_TOKEN")
         .map_err(|e| {
-            error!("Failed to read auth token: {}", e);
+            error!("Failed to read CI_SERVICE_TOKEN env var: {}", e);
             e
         })?;
     let auth_token = auth_token.trim().to_string();
@@ -109,6 +108,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         api_keys.insert(key.to_string());
                     }
                 }
+            }
+        }
+
+        // Load from environment variable
+        if let Ok(api_key) = std::env::var("CI_API_KEY") {
+            if !api_key.is_empty() {
+                api_keys.insert(api_key);
             }
         }
         

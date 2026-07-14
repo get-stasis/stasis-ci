@@ -1,4 +1,4 @@
-FROM rust:1.92 AS base
+FROM rust:1.94 AS base
 
 # The full rust image already has git and most tools, we just need to ensure cargo-watch
 # If git is missing, install it (but it should already be there)
@@ -42,7 +42,7 @@ COPY crates ./crates
 RUN cargo build --bin ci_runner
 
 # Development stage
-FROM rust:1.92 AS dev
+FROM rust:1.94 AS dev
 
 # The full rust image already has git and most tools, we just need to ensure cargo-watch
 # If git is missing, install it (but it should already be there)

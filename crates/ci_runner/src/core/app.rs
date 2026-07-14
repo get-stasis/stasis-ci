@@ -48,6 +48,7 @@ impl App {
                 .unwrap_or_else(|| "bridge".to_string()),
             default_timeout: config.executor.timeouts.default,
             max_timeout: config.executor.timeouts.max,
+            workspace_root: config.executor.workspace_root.clone(),
         }
     }
 }
