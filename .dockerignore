@@ -6,5 +6,10 @@ workspaces/
 cache/
 *.log
 .env
+.env.*
 .DS_Store
+.github/
+docker-compose*.yml
+Dockerfile.dev
+secrets/
 
